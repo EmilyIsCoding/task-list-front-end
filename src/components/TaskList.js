@@ -13,7 +13,7 @@ const TaskList = (props) => {
           title={task.title}
           isComplete={task.isComplete}
           onToggleComplete={props.onComplete}
-          // onRemove={task.remove}
+          onRemove={props.onRemove}
         />
       );
     });
@@ -32,7 +32,7 @@ TaskList.propTypes = {
     })
   ).isRequired,
   onComplete: PropTypes.func.isRequired,
-  // remove: PropTypes.func.isRequired,
+  onRemove: PropTypes.func.isRequired,
 };
 
 export default TaskList;

@@ -14,8 +14,8 @@ const Task = (props) => {
         {props.title}
       </button>
       <button
-        className="tasks__item__remove button"
-        // onClick={() => props.remove(props.id)}
+        className={`tasks__item__remove button ${buttonClass}`}
+        onClick={() => props.onRemove(props.id)}
       >
         x
       </button>
@@ -28,7 +28,7 @@ Task.propTypes = {
   title: PropTypes.string.isRequired,
   isComplete: PropTypes.bool.isRequired,
   onToggleComplete: PropTypes.func.isRequired,
-  // remove: PropTypes.func.isRequired,
+  onRemove: PropTypes.func.isRequired,
 };
 
 export default Task;
