@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import TaskList from './components/TaskList.js';
 import './App.css';
 import { useState } from 'react';
+import axios from 'axios';
 
 const taskDataList = [
   {
@@ -16,27 +17,81 @@ const taskDataList = [
   },
 ];
 
+const kBaseUrl = 'http://localhost:5000';
+
+const convertFromApi = (apiTask) => {
+  const { toggleComplete, ...rest } = apiTask;
+
+  const newTask = { toggleComplete: false, ...rest };
+  return newTask;
+};
+
+const getAllTasksApi = () => {
+  return axios
+    .get(`${kBaseUrl}/tasks`)
+    .then((response) => {
+      return response.data.map(convertFromApi);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+const toggleComplete = (id) => {
+  return axios
+    .patch(`${kBaseUrl}/tasks/${id}/complete`)
+    .then((response) => {
+      return convertFromApi(response.data);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
+const removeTaskApi = (id) => {
+  return axios
+    .delete(`${kBaseUrl}/tasks/${id}`)
+    .then((response) => {
+      return convertFromApi(response.data);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
 const App = () => {
   const [taskData, setTaskData] = useState(taskDataList);
 
+  const getAllTasks = () => {
+    return getAllTasksApi().then((tasks) => {
+      setTaskData(tasks);
+    });
+  };
+
+  useEffect(() => {
+    getAllTasks();
+  }, []);
+
   const toggleComplete = (id) => {
-    setTaskData((taskData) =>
-      taskData.map((task) => {
-        if (task.id == id) {
-          return { ...task, isComplete: !task.isComplete };
-        } else {
-          return task;
-        }
-      })
-    );
+    return toggleComplete(id).then((taskResult) => {
+      setTaskData((taskData) =>
+        taskData.map((task) => {
+          if (task.id == taskResult.id) {
+            return { ...task, isComplete: !task.isComplete };
+          } else {
+            return task;
+          }
+        })
+      );
+    });
   };
 
   const removeTask = (id) => {
-    setTaskData((taskData) =>
+    return removeTaskApi(id).then((taskResult) => {
       taskData.filter((task) => {
         return task.id !== id;
-      })
-    );
+      });
+    });
   };
 
   return (
