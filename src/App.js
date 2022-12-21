@@ -4,27 +4,16 @@ import './App.css';
 import { useState } from 'react';
 import axios from 'axios';
 
-const taskDataList = [
-  {
-    id: 1,
-    title: 'Mow the lawn',
-    isComplete: false,
-  },
-  {
-    id: 2,
-    title: 'Cook Pasta',
-    isComplete: true,
-  },
-];
-
 const kBaseUrl = 'http://localhost:5000';
 
+/* eslint-disable camelcase */
 const convertFromApi = (apiTask) => {
-  const { toggleComplete, ...rest } = apiTask;
+  const { is_complete, ...rest } = apiTask;
 
-  const newTask = { toggleComplete: false, ...rest };
+  const newTask = { isComplete: is_complete, ...rest };
   return newTask;
 };
+/* eslint-enable camelcase */
 
 const getAllTasksApi = () => {
   return axios
@@ -37,11 +26,23 @@ const getAllTasksApi = () => {
     });
 };
 
-const toggleComplete = (id) => {
+const toggleCompleteApi = (id, isComplete) => {
+  if (!isComplete) {
+    return axios
+      .patch(`${kBaseUrl}/tasks/${id}/mark_complete`)
+      .then((response) => {
+        console.log(response.data);
+        return convertFromApi(response.data.task);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
   return axios
-    .patch(`${kBaseUrl}/tasks/${id}/complete`)
+    .patch(`${kBaseUrl}/tasks/${id}/mark_incomplete`)
     .then((response) => {
-      return convertFromApi(response.data);
+      console.log(response.data);
+      return convertFromApi(response.data.task);
     })
     .catch((error) => {
       console.log(error);
@@ -52,7 +53,8 @@ const removeTaskApi = (id) => {
   return axios
     .delete(`${kBaseUrl}/tasks/${id}`)
     .then((response) => {
-      return convertFromApi(response.data);
+      console.log(response);
+      // return convertFromApi(response.data.task);
     })
     .catch((error) => {
       console.log(error);
@@ -60,7 +62,7 @@ const removeTaskApi = (id) => {
 };
 
 const App = () => {
-  const [taskData, setTaskData] = useState(taskDataList);
+  const [taskData, setTaskData] = useState([]);
 
   const getAllTasks = () => {
     return getAllTasksApi().then((tasks) => {
@@ -72,12 +74,12 @@ const App = () => {
     getAllTasks();
   }, []);
 
-  const toggleComplete = (id) => {
-    return toggleComplete(id).then((taskResult) => {
+  const toggleComplete = (id, isComplete) => {
+    return toggleCompleteApi(id, isComplete).then((taskResult) => {
       setTaskData((taskData) =>
         taskData.map((task) => {
           if (task.id == taskResult.id) {
-            return { ...task, isComplete: !task.isComplete };
+            return taskResult;
           } else {
             return task;
           }
